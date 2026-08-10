@@ -363,6 +363,13 @@ body {
   overflow: hidden;
   background: var(--surface);
 }
+.dual-inputs {
+  display: flex;
+  gap: 8px;
+}
+.dual-inputs .text-input {
+  flex: 1;
+}
 .step {
   flex: 1;
   display: flex;
@@ -396,7 +403,7 @@ body {
 /* Layout (inside modal) */
 .layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -409,6 +416,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
+  min-width: 0;
 }
 .panel h3 {
   font-size: 12.5px;
@@ -540,7 +548,12 @@ body {
 .toggle-btn.is-active { background: var(--accent); color: #fff; }
 
 /* Result area */
-.result-body { min-height: 200px; display: flex; flex-direction: column; }
+.result-body { 
+  min-height: 200px; 
+  display: flex; 
+  flex-direction: column; 
+  max-width: 100%; 
+}
 .empty-state, .error-state {
   margin: auto;
   text-align: center;
@@ -585,9 +598,15 @@ body {
   font-size: 12.5px;
   padding: 14px;
   border-radius: 5px;
-  overflow: auto;
+  overflow-y: auto;            /* Vertical scroll allow karega */
+  overflow-x: hidden;          /* NAYA: Horizontal scroll permanently band */
   max-height: 380px;
   margin: 0;
+  white-space: pre-wrap;       /* Line ke end par text neeche bhej dega */
+  word-wrap: break-word;
+  overflow-wrap: break-word;   /* NAYA: Lamba string bina space ke bhi break hoga */
+  width: 100%;                 /* NAYA: Box ke bahar jaane se rokega */
+  box-sizing: border-box;
 }
 
 /* Export row */

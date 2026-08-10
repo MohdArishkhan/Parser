@@ -20,6 +20,7 @@ A simple Python project for parsing document images using the Google Gemini API.
 3. Add your Gemini API key to `.env`:
    ```env
    GEMINI_API_KEY=your_key
+   OPENROUTER_API_KEY
    ```
 
 ## Run

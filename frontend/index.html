@@ -58,8 +58,10 @@
         </div>
         <div class="field">
           <span class="field-label">Mobile No &amp; Alternate No</span>
-          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="mobileNo"></div>
-          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="altMobileNo"></div>
+          <div class="dual-inputs">
+            <input type="text" id="mobileNo" class="text-input" placeholder="Mobile No">
+            <input type="text" id="altMobileNo" class="text-input" placeholder="Alternate No">
+          </div>
         </div>
       </div>
 
@@ -72,8 +74,8 @@
 
       <div class="form-row cols-3">
         <div class="field">
-          <span class="field-label">Date of Birth (DD-MM-YY)</span>
-          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="dob"></div>
+          <label for="dob">Date of Birth (DD-MM-YY)</label>
+          <input type="text" id="dob" class="text-input" placeholder="DD-MM-YY">
         </div>
         <div class="field">
           <span class="field-label">Marital Status</span>
@@ -83,8 +85,8 @@
           </div>
         </div>
         <div class="field">
-          <span class="field-label">Aadhar card / Voter ID / Passport No.</span>
-          <div class="digit-field" data-digit-group data-segments="12" id="idNumber"></div>
+          <label for="idNumber">Aadhar card / Voter ID / Passport No.</label>
+          <input type="text" id="idNumber" class="text-input" placeholder="ID Number">
         </div>
       </div>
 
@@ -94,8 +96,8 @@
           <input type="text" id="fatherName" class="text-input" placeholder="Mr.">
         </div>
         <div class="field">
-          <span class="field-label">Mobile Number &amp; Aadhar card no</span>
-          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="fatherMobileAadhar"></div>
+          <label for="fatherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
+          <input type="text" id="fatherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
         </div>
       </div>
       <div class="form-row cols-1">
@@ -111,8 +113,8 @@
           <input type="text" id="motherName" class="text-input" placeholder="Mrs.">
         </div>
         <div class="field">
-          <span class="field-label">Mobile Number &amp; Aadhar card no</span>
-          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="motherMobileAadhar"></div>
+          <label for="motherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
+          <input type="text" id="motherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
         </div>
       </div>
       <div class="form-row cols-1">
@@ -131,8 +133,8 @@
             <input type="text" id="permanentPoliceStation" class="text-input">
           </div>
           <div class="field inline">
-            <span class="field-label">Pin:</span>
-            <div class="digit-field" data-digit-group data-segments="6" id="permanentPin"></div>
+            <label for="permanentPin">Pin:</label>
+            <input type="text" id="permanentPin" class="text-input">
           </div>
         </div>
       </div>
@@ -146,8 +148,8 @@
             <input type="text" id="previousPoliceStation" class="text-input">
           </div>
           <div class="field inline">
-            <span class="field-label">Pin:</span>
-            <div class="digit-field" data-digit-group data-segments="6" id="previousPin"></div>
+            <label for="previousPin">Pin:</label>
+            <input type="text" id="previousPin" class="text-input">
           </div>
         </div>
       </div>
@@ -157,8 +159,8 @@
           <label for="guardianAddress">Local Guardian Name, address and Mobile No</label>
           <div class="guardian-mobiles">
             <span class="field-label">Mobile</span>
-            <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="guardianMobile1"></div>
-            <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="guardianMobile2"></div>
+            <input type="text" id="guardianMobile1" class="text-input" placeholder="Mobile 1">
+            <input type="text" id="guardianMobile2" class="text-input" placeholder="Mobile 2">
           </div>
         </div>
         <textarea id="guardianAddress" class="textarea" rows="3"></textarea>
@@ -168,8 +170,8 @@
             <input type="text" id="guardianPoliceStation" class="text-input">
           </div>
           <div class="field inline">
-            <span class="field-label">Pin:</span>
-            <div class="digit-field" data-digit-group data-segments="6" id="guardianPin"></div>
+            <label for="guardianPin">Pin:</label>
+            <input type="text" id="guardianPin" class="text-input">
           </div>
         </div>
       </div>
@@ -202,22 +204,22 @@
           <input type="text" id="stayMinimum" class="text-input" placeholder="e.g. 6 months">
         </div>
         <div class="field">
-          <span class="field-label">Date of joining</span>
-          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="joiningDate"></div>
+          <label for="joiningDate">Date of joining</label>
+          <input type="text" id="joiningDate" class="text-input" placeholder="DD-MM-YY">
         </div>
         <div class="field">
-          <span class="field-label">Room No (Flat/Room/Bed)</span>
+          <label>Room No (Flat/Room/Bed)</label>
           <div class="triple-field">
-            <input type="text" class="text-input small" id="roomFlat" aria-label="Flat">
+            <input type="text" class="text-input small" id="roomFlat" aria-label="Flat" placeholder="Flat">
             <span class="triple-sep">/</span>
-            <input type="text" class="text-input small" id="roomRoom" aria-label="Room">
+            <input type="text" class="text-input small" id="roomRoom" aria-label="Room" placeholder="Room">
             <span class="triple-sep">/</span>
-            <input type="text" class="text-input small" id="roomBed" aria-label="Bed">
+            <input type="text" class="text-input small" id="roomBed" aria-label="Bed" placeholder="Bed">
           </div>
         </div>
         <div class="field">
-          <span class="field-label">Quit date</span>
-          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="quitDate"></div>
+          <label for="quitDate">Quit date</label>
+          <input type="text" id="quitDate" class="text-input" placeholder="DD-MM-YY">
         </div>
       </div>
 
@@ -237,8 +239,8 @@
           </div>
         </div>
         <div class="field">
-          <span class="field-label">Rent start from date (dd-mm-yy)</span>
-          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="rentStartDate"></div>
+          <label for="rentStartDate">Rent start from date</label>
+          <input type="text" id="rentStartDate" class="text-input" placeholder="DD-MM-YY">
         </div>
       </div>
       <p class="form-note">Note: only after 3 months stay and given 1 month notice</p>
@@ -264,7 +266,7 @@
 
     </form>
 
-    <!-- ===== Upload & parse modal (the original workflow, tucked behind a button) ===== -->
+    <!-- ===== Upload & parse modal ===== -->
     <div id="uploadModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-panel">
         <div class="modal-header">
