@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>White House — Tenant Information Form</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <!-- ===== Letterhead ===== -->
+    <header class="letterhead">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M6 22 24 7l18 15" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11 20v18a2 2 0 002 2h22a2 2 0 002-2V20" stroke-linejoin="round"/>
+          <path d="M20 40V29h8v11" stroke-linejoin="round"/>
+        </svg>
+        <div class="brand-text">
+          <h1>White House</h1>
+          <p class="brand-address">B-23, Lane 7, Johri Farm, Noor Nagar Ext, Jamia Nagar, Okhla, New Delhi-110025</p>
+        </div>
+      </div>
+
+      <div class="letterhead-right">
+        <div class="rules-box">
+          <span>Scan for<br>house rules</span>
+        </div>
+        <label class="photo-box" id="photoBox" for="photoInput">
+          <img id="photoPreview" class="photo-preview hidden" alt="Tenant photo preview">
+          <span id="photoPlaceholder" class="photo-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 8a2 2 0 012-2h2l1.5-2h5L16 6h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Photo
+          </span>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+        </label>
+      </div>
+    </header>
+
+    <div class="header-actions">
+      <button type="button" id="openUploadBtn" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        Upload documents (forms, Aadhaar, ID…)
+      </button>
+      <button type="button" id="printFormBtn" class="btn btn-secondary">Print / save as PDF</button>
+    </div>
+
+    <h2 class="form-title">Tenant Information Form</h2>
+
+    <!-- ===== The form itself ===== -->
+    <form id="tenantForm" class="form-sheet" autocomplete="off">
+
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="tenantName">Name:-</label>
+          <input type="text" id="tenantName" class="text-input">
+        </div>
+        <div class="field">
+          <span class="field-label">Mobile No &amp; Alternate No</span>
+          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="mobileNo"></div>
+          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="altMobileNo"></div>
+        </div>
+      </div>
+
+      <div class="form-row cols-1">
+        <div class="field">
+          <label for="tenantEmail">Email:-</label>
+          <input type="email" id="tenantEmail" class="text-input">
+        </div>
+      </div>
+
+      <div class="form-row cols-3">
+        <div class="field">
+          <span class="field-label">Date of Birth (DD-MM-YY)</span>
+          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="dob"></div>
+        </div>
+        <div class="field">
+          <span class="field-label">Marital Status</span>
+          <div class="choice-group" role="radiogroup" aria-label="Marital status">
+            <label class="choice-box"><input type="radio" name="maritalStatus" value="Married"><span>Married</span></label>
+            <label class="choice-box"><input type="radio" name="maritalStatus" value="Unmarried"><span>Unmarried</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Aadhar card / Voter ID / Passport No.</span>
+          <div class="digit-field" data-digit-group data-segments="12" id="idNumber"></div>
+        </div>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="fatherName">Father's/Husband Name:-</label>
+          <input type="text" id="fatherName" class="text-input" placeholder="Mr.">
+        </div>
+        <div class="field">
+          <span class="field-label">Mobile Number &amp; Aadhar card no</span>
+          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="fatherMobileAadhar"></div>
+        </div>
+      </div>
+      <div class="form-row cols-1">
+        <div class="field">
+          <label for="fatherEmail">Email:-</label>
+          <input type="email" id="fatherEmail" class="text-input">
+        </div>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="field">
+          <label for="motherName">Mother's Name:-</label>
+          <input type="text" id="motherName" class="text-input" placeholder="Mrs.">
+        </div>
+        <div class="field">
+          <span class="field-label">Mobile Number &amp; Aadhar card no</span>
+          <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="motherMobileAadhar"></div>
+        </div>
+      </div>
+      <div class="form-row cols-1">
+        <div class="field">
+          <label for="motherEmail">Email:-</label>
+          <input type="email" id="motherEmail" class="text-input">
+        </div>
+      </div>
+
+      <div class="field block-field">
+        <label for="permanentAddress">Permanent Address</label>
+        <textarea id="permanentAddress" class="textarea" rows="3"></textarea>
+        <div class="sub-row">
+          <div class="field inline">
+            <label for="permanentPoliceStation">Police Station:</label>
+            <input type="text" id="permanentPoliceStation" class="text-input">
+          </div>
+          <div class="field inline">
+            <span class="field-label">Pin:</span>
+            <div class="digit-field" data-digit-group data-segments="6" id="permanentPin"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field block-field">
+        <label for="previousAddress">Previous Address</label>
+        <textarea id="previousAddress" class="textarea" rows="3"></textarea>
+        <div class="sub-row">
+          <div class="field inline">
+            <label for="previousPoliceStation">Police Station:</label>
+            <input type="text" id="previousPoliceStation" class="text-input">
+          </div>
+          <div class="field inline">
+            <span class="field-label">Pin:</span>
+            <div class="digit-field" data-digit-group data-segments="6" id="previousPin"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field block-field">
+        <div class="guardian-head">
+          <label for="guardianAddress">Local Guardian Name, address and Mobile No</label>
+          <div class="guardian-mobiles">
+            <span class="field-label">Mobile</span>
+            <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="guardianMobile1"></div>
+            <div class="digit-field" data-digit-group data-prefix="91" data-segments="10" id="guardianMobile2"></div>
+          </div>
+        </div>
+        <textarea id="guardianAddress" class="textarea" rows="3"></textarea>
+        <div class="sub-row">
+          <div class="field inline">
+            <label for="guardianPoliceStation">Police Station:</label>
+            <input type="text" id="guardianPoliceStation" class="text-input">
+          </div>
+          <div class="field inline">
+            <span class="field-label">Pin:</span>
+            <div class="digit-field" data-digit-group data-segments="6" id="guardianPin"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field block-field">
+        <span class="field-label">Academic / Job Information</span>
+        <div class="academic-grid">
+          <div class="field">
+            <label for="deptPost">Department/Post</label>
+            <input type="text" id="deptPost" class="text-input">
+          </div>
+          <div class="field">
+            <label for="programClass">Program/Class</label>
+            <input type="text" id="programClass" class="text-input">
+          </div>
+          <div class="field">
+            <label for="semesterYear">Semester/Year</label>
+            <input type="text" id="semesterYear" class="text-input">
+          </div>
+          <div class="field span-3">
+            <label for="institutionName">Name and Address of School/College/University/Office</label>
+            <input type="text" id="institutionName" class="text-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row cols-4">
+        <div class="field">
+          <label for="stayMinimum">Expected period of stay minimum</label>
+          <input type="text" id="stayMinimum" class="text-input" placeholder="e.g. 6 months">
+        </div>
+        <div class="field">
+          <span class="field-label">Date of joining</span>
+          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="joiningDate"></div>
+        </div>
+        <div class="field">
+          <span class="field-label">Room No (Flat/Room/Bed)</span>
+          <div class="triple-field">
+            <input type="text" class="text-input small" id="roomFlat" aria-label="Flat">
+            <span class="triple-sep">/</span>
+            <input type="text" class="text-input small" id="roomRoom" aria-label="Room">
+            <span class="triple-sep">/</span>
+            <input type="text" class="text-input small" id="roomBed" aria-label="Bed">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Quit date</span>
+          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="quitDate"></div>
+        </div>
+      </div>
+
+      <div class="form-row cols-3 rent-row">
+        <div class="field">
+          <label for="rentAdvance">One month rent advance</label>
+          <div class="rupee-field">
+            <span class="rupee-prefix">Rs.</span>
+            <input type="number" id="rentAdvance" class="text-input" min="0">
+          </div>
+        </div>
+        <div class="field">
+          <label for="securityDeposit">Refundable security deposit</label>
+          <div class="rupee-field">
+            <span class="rupee-prefix">Rs.</span>
+            <input type="number" id="securityDeposit" class="text-input" min="0">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Rent start from date (dd-mm-yy)</span>
+          <div class="digit-field" data-digit-group data-segments="2,2,2" data-separator="-" id="rentStartDate"></div>
+        </div>
+      </div>
+      <p class="form-note">Note: only after 3 months stay and given 1 month notice</p>
+
+      <div class="confirm-row">
+        <label class="confirm-check">
+          <input type="checkbox" id="confirmTrue">
+          <span>I confirm that the information given is true.</span>
+        </label>
+        <span class="for-white-house">for White House</span>
+      </div>
+
+      <div class="signature-row">
+        <div class="signature-field">
+          <input type="text" id="tenantSignature" class="signature-input" placeholder="Sign…………………………">
+          <span class="signature-caption">Tenant signature</span>
+        </div>
+        <div class="signature-field">
+          <input type="text" id="ownerSignature" class="signature-input" placeholder="Sign…………………………">
+          <span class="signature-caption">Authorised signatory, for White House</span>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- ===== Upload & parse modal (the original workflow, tucked behind a button) ===== -->
+    <div id="uploadModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <div>
+            <h2 id="modalTitle">Upload documents</h2>
+            <p class="modal-subtitle">Drop in the tenant's filled form, Aadhaar, or any ID/document to extract data.</p>
+          </div>
+          <button type="button" id="closeUploadBtn" class="modal-close" aria-label="Close">&times;</button>
+        </div>
+
+        <ol class="steps" id="steps">
+          <li class="step" data-step="upload"><span class="step-index">1</span><span class="step-label">Upload</span></li>
+          <li class="step" data-step="parse"><span class="step-index">2</span><span class="step-label">Parse</span></li>
+          <li class="step" data-step="export"><span class="step-index">3</span><span class="step-label">Export</span></li>
+        </ol>
+
+        <main class="layout">
+
+          <section class="panel" aria-labelledby="upload-heading">
+            <h3 id="upload-heading">Upload documents</h3>
+
+            <form id="uploadForm">
+              <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose files to upload">
+                <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+                  <path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/>
+                </svg>
+                <span class="dropzone-text">Drag and drop files here, or click to browse</span>
+                <span class="dropzone-hint">JPG, PNG, WEBP, or PDF — add more any time, one by one or all at once</span>
+                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple hidden>
+              </div>
+
+              <div id="fileInfo" class="file-info hidden">
+                <div class="file-info-header">
+                  <span id="fileCount" class="file-count"></span>
+                  <button type="button" id="clearFileBtn" class="btn btn-text">Clear all</button>
+                </div>
+                <ul id="fileList" class="file-list"></ul>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Parse documents</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="results-heading">
+            <div class="panel-header">
+              <h3 id="results-heading">Results</h3>
+              <div class="view-toggle" id="viewToggle" role="tablist" aria-label="Result view">
+                <button type="button" class="toggle-btn is-active" data-view="table" role="tab" aria-selected="true">Table</button>
+                <button type="button" class="toggle-btn" data-view="json" role="tab" aria-selected="false">Raw JSON</button>
+              </div>
+            </div>
+
+            <p id="batchSummary" class="batch-summary hidden"></p>
+
+            <div id="resultBody" class="result-body" aria-live="polite">
+              <p id="emptyState" class="empty-state">Parsed data will appear here after you upload and parse your documents.</p>
+
+              <div id="loadingState" class="loading-state hidden">
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Parsing documents…</span>
+              </div>
+
+              <p id="errorState" class="error-state hidden"></p>
+
+              <div id="tableView" class="table-view hidden">
+                <table>
+                  <thead><tr id="tableHeadRow"></tr></thead>
+                  <tbody id="tableBody"></tbody>
+                </table>
+              </div>
+
+              <pre id="jsonView" class="json-view hidden"></pre>
+            </div>
+
+            <div class="export-row" id="exportRow" hidden>
+              <span class="export-label">Export as:</span>
+              <button type="button" class="btn btn-secondary" id="exportJson">JSON</button>
+              <button type="button" class="btn btn-secondary" id="exportCsv">CSV</button>
+              <button type="button" class="btn btn-secondary" id="exportXlsx">Excel</button>
+              <button type="button" class="btn btn-secondary" id="exportPdf">PDF</button>
+              <button type="button" class="btn btn-text" id="copyJsonBtn">Copy JSON</button>
+            </div>
+          </section>
+
+        </main>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+  <script src="/frontend/app.js"></script>
+</body>
+</html>
