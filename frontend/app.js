@@ -1,8 +1,6 @@
 (function () {
   // =========================================================
   // Digit-box fields (mobile numbers, dates, PIN codes, etc.)
-  // Reads data-prefix / data-segments / data-separator off any
-  // [data-digit-group] container and builds the boxes + keyboard nav.
   // =========================================================
   function buildDigitGroups() {
     document.querySelectorAll('[data-digit-group]').forEach((container) => {
@@ -100,12 +98,13 @@
   // =========================================================
   const printFormBtn = document.getElementById('printFormBtn');
   if (printFormBtn) {
-    printFormBtn.addEventListener('click', () => window.print());
+    printFormBtn.addEventListener('click', () => {
+      window.print();
+    });
   }
 
   // =========================================================
-  // Upload modal — bundles the document upload + parse workflow
-  // behind a single button instead of showing it on the page.
+  // Upload modal logic
   // =========================================================
   const openUploadBtn = document.getElementById('openUploadBtn');
   const closeUploadBtn = document.getElementById('closeUploadBtn');
@@ -134,8 +133,7 @@
   }
 
   // =========================================================
-  // Everything below is the original upload / parse / export
-  // workflow, unchanged — it now lives inside the modal above.
+  // Workflow Variables
   // =========================================================
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('fileInput');
@@ -164,7 +162,6 @@
   const viewToggle = document.getElementById('viewToggle');
   const exportRow = document.getElementById('exportRow');
 
-  // Files accumulate here as the person adds them, one by one or in bulk.
   let currentFiles = [];
   let parsedData = null;
   let currentView = 'table';
@@ -195,7 +192,7 @@
     }[c]));
   }
 
-  // ---- File list (adds up as files are selected/dropped, one by one or in bulk) ----
+  // ---- File list ----
   function renderFileList() {
     fileList.innerHTML = '';
 
@@ -233,7 +230,6 @@
     fileInfo.classList.remove('hidden');
     renderFileList();
     submitBtn.disabled = false;
-    // Reset the native input so selecting the same file again later still fires 'change'.
     fileInput.value = '';
   }
 
@@ -339,6 +335,10 @@
       renderTable();
       showState('result');
       setStep('export');
+
+      // 💥 NEW: Trigger Form Auto-Fill when parsing finishes
+      autoFillForm(parsedData);
+
     } catch (err) {
       errorState.textContent = `Could not parse this batch. ${err.message}`;
       showState('error');
@@ -392,8 +392,6 @@
     return res;
   }
 
-  // Rows for the table/exports. Batch responses (with a `results` array) get a
-  // File column so every field stays traceable to the document it came from.
   function getRows() {
     if (parsedData && Array.isArray(parsedData.results)) {
       const rows = [];
@@ -416,7 +414,6 @@
       return rows;
     }
 
-    // Fallback for a plain (non-batch) JSON response.
     const flat = flatten(parsedData, '', {});
     return Object.entries(flat).map(([field, val]) => ({ Field: field, Value: String(val) }));
   }
@@ -445,6 +442,115 @@
       });
       tableBody.appendChild(tr);
     });
+  }
+
+  // =========================================================
+  // 💥 NEW: Auto-Fill Form Logic
+  // Matches extracted JSON to your HTML inputs perfectly
+  // =========================================================
+  function autoFillForm(data) {
+    if (!data || !Array.isArray(data.results)) return;
+
+    // 1. Combine all extracted data from the batch into one flat dictionary
+    let flatData = {};
+    data.results.forEach(res => {
+      if (res.status === 'success' && res.data) {
+        Object.assign(flatData, flatten(res.data, '', {}));
+      }
+    });
+
+    // 2. Helper to fuzzy-search keys in the extracted JSON
+    function findVal(keywords) {
+      for (const [key, val] of Object.entries(flatData)) {
+        const lowerKey = key.toLowerCase();
+        if (keywords.some(kw => lowerKey.includes(kw))) {
+          return String(val);
+        }
+      }
+      return '';
+    }
+
+    // 3. Map standard text & textarea inputs
+    const textMappings = {
+      'tenantName': ['name', 'full_name', 'tenant_name'],
+      'tenantEmail': ['email', 'tenant_email'],
+      'fatherName': ['father_name', 'husband_name', 'parent_name'],
+      'fatherEmail': ['father_email', 'parent_email'],
+      'motherName': ['mother_name'],
+      'motherEmail': ['mother_email'],
+      'permanentAddress': ['permanent_address'],
+      'permanentPoliceStation': ['permanent_police_station', 'police_station'],
+      'previousAddress': ['previous_address', 'temporary_address'],
+      'previousPoliceStation': ['previous_police_station'],
+      'guardianAddress': ['guardian_address', 'local_guardian_address'],
+      'guardianPoliceStation': ['guardian_police_station'],
+      'deptPost': ['department', 'post', 'dept'],
+      'programClass': ['program', 'class', 'course'],
+      'semesterYear': ['semester', 'year'],
+      'institutionName': ['institution', 'school', 'college', 'office', 'university'],
+      'stayMinimum': ['expected_stay', 'stay_minimum'],
+      'rentAdvance': ['rent_advance', 'advance', 'one_month_rent'],
+      'securityDeposit': ['security_deposit', 'deposit', 'refundable']
+    };
+
+    for (const [id, keys] of Object.entries(textMappings)) {
+      const el = document.getElementById(id);
+      if (el) {
+        const extracted = findVal(keys);
+        if (extracted) el.value = extracted;
+      }
+    }
+
+    // 4. Map the complex Digit-Box fields
+    const digitMappings = {
+      'mobileNo': ['mobile_no', 'phone_number', 'contact', 'tenant_mobile'],
+      'altMobileNo': ['alt_mobile', 'alternate', 'secondary_phone'],
+      'dob': ['dob', 'date_of_birth', 'birth'],
+      'idNumber': ['aadhar', 'aadhaar', 'voter', 'passport', 'id_number'],
+      'fatherMobileAadhar': ['father_mobile', 'father_aadhar', 'father_aadhaar'],
+      'motherMobileAadhar': ['mother_mobile', 'mother_aadhar', 'mother_aadhaar'],
+      'permanentPin': ['permanent_pin', 'pin_code', 'pincode', 'zip'],
+      'previousPin': ['previous_pin'],
+      'guardianMobile1': ['guardian_mobile', 'local_guardian_mobile'],
+      'guardianPin': ['guardian_pin'],
+      'joiningDate': ['joining_date', 'date_of_joining'],
+      'quitDate': ['quit_date', 'leave_date'],
+      'rentStartDate': ['rent_start', 'start_date']
+    };
+
+    for (const [id, keys] of Object.entries(digitMappings)) {
+      const container = document.getElementById(id);
+      if (!container) continue;
+      
+      // Strip formatting (spaces, slashes) to push into the individual boxes
+      let val = findVal(keys).replace(/[^a-zA-Z0-9]/g, ''); 
+      if (!val) continue;
+
+      const boxes = container.querySelectorAll('.digit-box:not(.is-prefix)');
+      for (let i = 0; i < boxes.length && i < val.length; i++) {
+        boxes[i].value = val[i];
+      }
+    }
+
+    // 5. Map Marital Status Radio Buttons
+    const marital = findVal(['marital', 'status']).toLowerCase();
+    if (marital.includes('unmarried') || marital.includes('single')) {
+      const r = document.querySelector('input[name="maritalStatus"][value="Unmarried"]');
+      if (r) r.checked = true;
+    } else if (marital.includes('married')) {
+      const r = document.querySelector('input[name="maritalStatus"][value="Married"]');
+      if (r) r.checked = true;
+    }
+
+    // 6. Map Triple Field (Room / Flat / Bed)
+    const roomStr = findVal(['room', 'flat', 'bed']);
+    if (roomStr) {
+      // Splits the AI's string by spaces, slashes, or commas
+      const parts = roomStr.split(/[\/, -]+/);
+      if (parts[0]) document.getElementById('roomFlat').value = parts[0];
+      if (parts[1]) document.getElementById('roomRoom').value = parts[1];
+      if (parts[2]) document.getElementById('roomBed').value = parts[2];
+    }
   }
 
   // ---- Export helpers ----
