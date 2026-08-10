@@ -32,6 +32,6 @@ python main.py
 ```
 
 ## Notes
-
+-start you code from this directory :  C:\Users\LENOVO\Desktop\Parser\form_aadhaar_parser>uvicorn api:app --reload
 - Put your input images in the `images/` folder.
 - Parsed results will be saved in the `outputs/` folder.
