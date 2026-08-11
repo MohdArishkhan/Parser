@@ -1,6 +1,6 @@
 # Form Aadhaar Parser
 
-A simple Python project for parsing document images using the Google Gemini API.
+A simple Python project for parsing document images using the Google Gemini API & fallback of Openrouter Api.
 
 ## Project Structure
 

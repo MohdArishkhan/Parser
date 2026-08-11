@@ -7,26 +7,6 @@ from google.genai import types
 from parsers.base import BaseDocumentParser
 from openai import OpenAI
 
-# Shared prompt to ensure both AIs receive the exact same instructions
-# AUTO_PROMPT = """
-# Analyze the provided document and determine its type. 
-# It will generally be either a "Tenant Information Form" or an "Aadhaar Card".
-
-# 1. If it is a Tenant Information Form, extract:
-#     - Tenant Details, Parent Details, Address Details, Local Guardian, Academic Details, and Stay Details.
-#     - Pay attention to handwriting and checkboxes.
-
-# 2. If it is an Aadhaar Card, extract:
-#     - Full Name, DOB/YOB, Gender, 12-digit Aadhaar Number, and Address (if back side).
-
-# Return the result STRICTLY as a JSON object with exactly this structure:
-# {
-#     "detected_document_type": "form" | "aadhaar" | "other",
-#     "extracted_data": { ... }
-# }
-# """
-# Shared prompt to ensure both AIs receive the exact same instructions
-# Shared prompt to ensure both AIs receive the exact same instructions
 AUTO_PROMPT = """
 Analyze the provided document and determine its type. 
 It will generally be either a "Tenant Information Form" or an "Aadhaar Card".
@@ -36,7 +16,7 @@ IF A FIELD IS EMPTY, MISSING, OR CROSSED OUT ON THE FORM, YOU MUST STILL INCLUDE
 
 1. If it is a Tenant Information Form, extract:
     - Tenant Details: Name, Email, DOB, and Marital Status. 
-      *CRITICAL INSTRUCTION FOR MARITAL STATUS*: Look carefully at the small square boxes to the left of the words "Married" and "Unmarried". Determine precisely which box contains the checkmark/tick and extract that exact value ("Married" or "Unmarried"). In the provided sample, note that the checkmark is inside the box next to "Unmarried".
+      *CRITICAL INSTRUCTION FOR MARITAL STATUS*: Look carefully at the small square boxes to the left of the words "Married" and "Unmarried". Determine precisely which box contains the checkmark/tick and extract that exact value ("Married" or "Unmarried")".
     - Parent Details: Extract Father's name, email, and the combined "Mobile/Aadhaar" box. Do the same for Mother.
     - Address Details: Permanent and Previous address, including Police Station and Pin boxes.
     - Guardian Details: Name/Address block, plus the two separate Mobile number rows, Police Station, and Pin.
@@ -182,9 +162,26 @@ class OpenRouterAutoParser(BaseDocumentParser):
         return json.loads(clean_text)
 
 
+def _is_rate_limited(e: Exception) -> bool:
+    """
+    Prefer a structured status code when the SDK exposes one; fall back to
+    string-matching the message. Pure string-matching is fragile — if the
+    SDK's exception format changes, the fallback silently stops firing — so
+    treat the string check as a safety net, not the primary signal. Worth
+    confirming what attribute your installed google-genai / openai SDK
+    versions actually set (e.g. `.status_code`, `.code`, or something nested
+    under `.response`) and adjusting the getattr calls below to match.
+    """
+    status = getattr(e, "status_code", None) or getattr(e, "code", None)
+    if status == 429:
+        return True
+    error_msg = str(e).lower()
+    return "429" in error_msg or "resource_exhausted" in error_msg or "quota" in error_msg
+
+
 class FallbackAutoParser(BaseDocumentParser):
     """Wraps two parsers and automatically switches if the primary fails."""
-    
+
     def __init__(self, primary: BaseDocumentParser, fallback: BaseDocumentParser):
         self.primary = primary
         self.fallback = fallback
@@ -194,11 +191,8 @@ class FallbackAutoParser(BaseDocumentParser):
             # Attempt to use Gemini first
             return self.primary.parse(file_path)
         except Exception as e:
-            error_msg = str(e).lower()
-            # If Gemini blocks us due to the Free Tier Rate Limit
-            if "429" in error_msg or "resource_exhausted" in error_msg or "quota" in error_msg:
-                print(f"Gemini Limit Hit! Switching to OpenRouter Fallback...")
+            if _is_rate_limited(e):
+                print("Gemini Limit Hit! Switching to OpenRouter Fallback...")
                 return self.fallback.parse(file_path)
-            else:
-                # If it's a real error (like a corrupt image), throw it normally
-                raise e
+            # If it's a real error (like a corrupt image), throw it normally
+            raise e
