@@ -146,7 +146,6 @@ async def process_single_file(file: UploadFile) -> dict:
             if os.path.exists(path):
                 os.remove(path)
 
-
 @app.post("/parse-batch")
 async def parse_batch(files: List[UploadFile] = File(...)):
     # Launch all tasks concurrently; the queue_lock forces them through sequentially.
