@@ -11,6 +11,11 @@ import cv2
 import numpy as np
 import fitz  # PyMuPDF
 
+# All temp files created anywhere in this app use this prefix, so a cleanup
+# sweep of the OS temp directory can identify and remove only files this
+# app created — never someone else's unrelated temp files on the same host.
+TEMP_FILE_PREFIX = "docparser_"
+
 
 def rasterize_pdf_page(pdf_path: str, dpi: int = 250, page_number: int = 0) -> str:
     """
@@ -24,7 +29,7 @@ def rasterize_pdf_page(pdf_path: str, dpi: int = 250, page_number: int = 0) -> s
     page = doc.load_page(page_number)
     pix = page.get_pixmap(dpi=dpi)
 
-    fd, image_path = tempfile.mkstemp(suffix=".jpg")
+    fd, image_path = tempfile.mkstemp(suffix=".jpg", prefix=TEMP_FILE_PREFIX)
     os.close(fd)
     pix.save(image_path)
     doc.close()

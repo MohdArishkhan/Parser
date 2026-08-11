@@ -1,18 +1,60 @@
 import os
+import time
+import glob
 import tempfile
 import asyncio
+from contextlib import asynccontextmanager
 from typing import List
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from parsers.factory import ParserFactory
-from parsers.preprocessing import crop_to_document, enhance_document_image, rasterize_pdf_page
+from parsers.preprocessing import (
+    crop_to_document,
+    enhance_document_image,
+    rasterize_pdf_page,
+    TEMP_FILE_PREFIX,
+)
 
 load_dotenv()
 
-app = FastAPI(title="Document & PDF Parser API")
+ORPHAN_MAX_AGE_SECONDS = 60 * 60       # 1 hour — matches the request
+ORPHAN_SWEEP_INTERVAL_SECONDS = 15 * 60  # how often to check
+
+
+async def _cleanup_orphaned_temp_files():
+    """
+    Safety net only — the normal cleanup path is the `finally` block in
+    process_single_file, which removes each request's temp files within
+    seconds of that request finishing. This loop exists purely to catch
+    files left behind if a request is killed mid-processing (crash, OOM,
+    forced restart) so the `finally` block never gets to run. It only ever
+    touches files with this app's TEMP_FILE_PREFIX, never unrelated files
+    in the shared OS temp directory.
+    """
+    pattern = os.path.join(tempfile.gettempdir(), f"{TEMP_FILE_PREFIX}*")
+    while True:
+        cutoff = time.time() - ORPHAN_MAX_AGE_SECONDS
+        for path in glob.glob(pattern):
+            try:
+                if os.path.getmtime(path) < cutoff:
+                    os.remove(path)
+            except OSError:
+                pass  # already removed, or a race with another worker
+        await asyncio.sleep(ORPHAN_SWEEP_INTERVAL_SECONDS)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    sweep_task = asyncio.create_task(_cleanup_orphaned_temp_files())
+    yield
+    sweep_task.cancel()
+
+
+app = FastAPI(title="Document & PDF Parser API", lifespan=lifespan)
 ALLOWED_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".webp"}
+MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB per file
 
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
@@ -47,11 +89,24 @@ async def process_single_file(file: UploadFile) -> dict:
 
     temp_paths = []
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp_file:
-            content = await file.read()
-            temp_file.write(content)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext, prefix=TEMP_FILE_PREFIX) as temp_file:
             temp_path = temp_file.name
-        temp_paths.append(temp_path)
+            temp_paths.append(temp_path)
+
+            # Stream the upload to disk in chunks instead of buffering the
+            # whole thing into memory first, so an oversized file is caught
+            # (and the read stopped early) rather than fully landing in RAM
+            # before we even get to check its size.
+            size = 0
+            while chunk := await file.read(1024 * 1024):  # 1 MB at a time
+                size += len(chunk)
+                if size > MAX_UPLOAD_SIZE_BYTES:
+                    return {
+                        "file_name": file.filename,
+                        "status": "error",
+                        "error": f"File exceeds the {MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)} MB limit",
+                    }
+                temp_file.write(chunk)
 
         # Rasterize PDFs to an image first, so every file (PDF or photo)
         # goes through the same enhancement and the parser always sees a

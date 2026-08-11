@@ -5,7 +5,12 @@ import shutil
 import tempfile
 from dotenv import load_dotenv
 from parsers.factory import ParserFactory
-from parsers.preprocessing import crop_to_document, enhance_document_image, rasterize_pdf_page
+from parsers.preprocessing import (
+    crop_to_document,
+    enhance_document_image,
+    rasterize_pdf_page,
+    TEMP_FILE_PREFIX,
+)
 
 load_dotenv()
 
@@ -24,7 +29,7 @@ def prepare_for_parsing(file_path: str) -> str:
     if ext == ".pdf":
         image_path = rasterize_pdf_page(file_path)
     else:
-        fd, image_path = tempfile.mkstemp(suffix=ext)
+        fd, image_path = tempfile.mkstemp(suffix=ext, prefix=TEMP_FILE_PREFIX)
         os.close(fd)
         shutil.copyfile(file_path, image_path)
 

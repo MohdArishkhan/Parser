@@ -150,9 +150,25 @@
       : `${currentFiles.length} files selected`;
   }
 
+  const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB — keep in sync with the server's MAX_UPLOAD_SIZE_BYTES
+
   function handleFiles(incoming) {
     if (!incoming || incoming.length === 0) return;
-    currentFiles = currentFiles.concat(Array.from(incoming));
+
+    const files = Array.from(incoming);
+    const accepted = files.filter((f) => f.size <= MAX_FILE_SIZE);
+    const tooLarge = files.filter((f) => f.size > MAX_FILE_SIZE);
+
+    if (tooLarge.length > 0) {
+      const names = tooLarge.map((f) => f.name).join(', ');
+      alert(
+        `${tooLarge.length === 1 ? 'This file exceeds' : 'These files exceed'} the 25 MB limit and ${tooLarge.length === 1 ? 'was' : 'were'} skipped: ${names}`
+      );
+    }
+
+    if (accepted.length === 0) return;
+
+    currentFiles = currentFiles.concat(accepted);
     fileInfo.classList.remove('hidden');
     renderFileList();
     submitBtn.disabled = false;
