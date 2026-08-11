@@ -43,8 +43,8 @@ def _order_corners(pts: np.ndarray) -> np.ndarray:
     rect[0] = pts[np.argmin(s)]        # top-left: smallest x+y
     rect[2] = pts[np.argmax(s)]        # bottom-right: largest x+y
     diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)]     # top-right: smallest y-x
-    rect[3] = pts[np.argmax(diff)]     # bottom-left: largest y-x
+    rect[1] = pts[np.argmin(diff)]     
+    rect[3] = pts[np.argmax(diff)]     
     return rect
 
 
