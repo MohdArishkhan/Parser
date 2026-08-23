@@ -1,28 +1,34 @@
 import os
 import glob
 import json
+import time
 import shutil
+import logging
 import tempfile
 from dotenv import load_dotenv
 from parsers.factory import ParserFactory
 from parsers.preprocessing import (
-    crop_to_document,
-    enhance_document_image,
+    preprocess_document_image,
     rasterize_pdf_page,
     TEMP_FILE_PREFIX,
+    RATE_LIMIT_DELAY_SECONDS,
 )
 
 load_dotenv()
+
+# So preprocessing.py's page-count / read-failure warnings surface in the
+# terminal instead of vanishing silently.
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 
 def prepare_for_parsing(file_path: str) -> str:
     """
-    Rasterize PDFs and run the same shadow/contrast cleanup used by the API,
-    so CLI results match what /parse-batch produces. Always returns a path
-    to a temporary working copy — the original file in images/ is never
-    modified or overwritten.
+    Rasterize PDFs and run the same crop/shadow/contrast/downscale cleanup
+    used by the API, so CLI results match what /parse-batch produces.
+    Always returns a path to a temporary working copy — the original file
+    in images/ is never modified or overwritten.
     """
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -34,10 +40,20 @@ def prepare_for_parsing(file_path: str) -> str:
         shutil.copyfile(file_path, image_path)
 
     if os.path.splitext(image_path)[1].lower() in IMAGE_EXTENSIONS:
-        crop_to_document(image_path)
-        enhance_document_image(image_path)
+        preprocess_document_image(image_path)
 
     return image_path
+
+
+def _safe_output_path(output_dir: str, filename: str) -> str:
+    """
+    Builds the output JSON path from the *full* original filename
+    (extension included, sanitized), not just the base name — otherwise
+    e.g. "form.jpg" and "form.pdf" in the same batch would collide and
+    overwrite each other's result.
+    """
+    safe_name = filename.replace(os.sep, "_").replace(".", "_")
+    return os.path.join(output_dir, f"{safe_name}_result.json")
 
 
 def main():
@@ -75,10 +91,9 @@ def main():
     print(f"\nFound {len(files_to_process)} documents. Starting batch processing...\n")
 
     # Loop through and parse them dynamically
-    for file_path in files_to_process:
+    for i, file_path in enumerate(files_to_process):
         filename = os.path.basename(file_path)
-        base_name = os.path.splitext(filename)[0]
-        output_path = os.path.join(output_dir, f"{base_name}_result.json")
+        output_path = _safe_output_path(output_dir, filename)
 
         print(f"{'='*60}")
         print(f"PROCESSING: {filename}")
@@ -108,6 +123,12 @@ def main():
             # Clean up the temp working copy — never delete the original.
             if prepared_path and prepared_path != file_path and os.path.exists(prepared_path):
                 os.remove(prepared_path)
+
+        # Same rate-limit budget the API uses, so a big batch doesn't burn
+        # through free-tier quota faster than /parse-batch would. Skipped
+        # after the last file since there's nothing left to protect.
+        if i < len(files_to_process) - 1:
+            time.sleep(RATE_LIMIT_DELAY_SECONDS)
 
     print(f"{'='*60}")
     print("BATCH PROCESSING COMPLETE!")

@@ -1,5 +1,28 @@
 (function () {
   // =========================================================
+  // Topbar date
+  // =========================================================
+  const topbarDate = document.getElementById('topbarDate');
+  if (topbarDate) {
+    topbarDate.textContent = new Date().toLocaleDateString(undefined, {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    });
+  }
+
+  // =========================================================
+  // Toast — lightweight, non-blocking notice (replaces alert())
+  // =========================================================
+  const toastStack = document.getElementById('toastStack');
+  function showToast(message, isError) {
+    if (!toastStack) return;
+    const el = document.createElement('div');
+    el.className = 'toast' + (isError ? ' is-error' : '');
+    el.textContent = message;
+    toastStack.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+
+  // =========================================================
   // Tenant photo preview
   // =========================================================
   const photoInput = document.getElementById('photoInput');
@@ -161,8 +184,9 @@
 
     if (tooLarge.length > 0) {
       const names = tooLarge.map((f) => f.name).join(', ');
-      alert(
-        `${tooLarge.length === 1 ? 'This file exceeds' : 'These files exceed'} the 25 MB limit and ${tooLarge.length === 1 ? 'was' : 'were'} skipped: ${names}`
+      showToast(
+        `${tooLarge.length === 1 ? 'This file exceeds' : 'These files exceed'} the 25 MB limit and ${tooLarge.length === 1 ? 'was' : 'were'} skipped: ${names}`,
+        true
       );
     }
 
@@ -760,6 +784,7 @@
     const btn = document.getElementById('copyJsonBtn');
     const original = btn.textContent;
     btn.textContent = 'Copied';
+    showToast('JSON copied to clipboard');
     setTimeout(() => (btn.textContent = original), 1600);
   });
 })();

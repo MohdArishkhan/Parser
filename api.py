@@ -1,6 +1,7 @@
 import os
 import time
 import glob
+import logging
 import tempfile
 import asyncio
 from contextlib import asynccontextmanager
@@ -11,16 +12,40 @@ from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from parsers.factory import ParserFactory
 from parsers.preprocessing import (
-    crop_to_document,
-    enhance_document_image,
+    preprocess_document_image,
     rasterize_pdf_page,
     TEMP_FILE_PREFIX,
+    RATE_LIMIT_DELAY_SECONDS,
 )
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 ORPHAN_MAX_AGE_SECONDS = 60 * 60       # 1 hour — matches the request
 ORPHAN_SWEEP_INTERVAL_SECONDS = 15 * 60  # how often to check
+PARSE_TIMEOUT_SECONDS = 90             # guards against a hung provider connection stalling the queue
+
+# Magic-byte signatures for the file types we accept. Filename extensions
+# are trivially spoofable (rename anything.exe to anything.pdf) and are
+# only used for routing (pdf vs image); this checks the actual bytes.
+_FILE_SIGNATURES = {
+    ".pdf": [b"%PDF-"],
+    ".jpg": [b"\xff\xd8\xff"],
+    ".jpeg": [b"\xff\xd8\xff"],
+    ".png": [b"\x89PNG\r\n\x1a\n"],
+    ".webp": [b"RIFF"],  # followed by "WEBP" at offset 8; checked separately below
+}
+
+
+def _content_matches_extension(header: bytes, ext: str) -> bool:
+    signatures = _FILE_SIGNATURES.get(ext)
+    if not signatures:
+        return False
+    if ext == ".webp":
+        return header.startswith(b"RIFF") and header[8:12] == b"WEBP"
+    return any(header.startswith(sig) for sig in signatures)
 
 
 async def _cleanup_orphaned_temp_files():
@@ -98,7 +123,10 @@ async def process_single_file(file: UploadFile) -> dict:
             # (and the read stopped early) rather than fully landing in RAM
             # before we even get to check its size.
             size = 0
+            header = b""
             while chunk := await file.read(1024 * 1024):  # 1 MB at a time
+                if not header:
+                    header = chunk[:16]
                 size += len(chunk)
                 if size > MAX_UPLOAD_SIZE_BYTES:
                     return {
@@ -107,6 +135,16 @@ async def process_single_file(file: UploadFile) -> dict:
                         "error": f"File exceeds the {MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)} MB limit",
                     }
                 temp_file.write(chunk)
+
+        # The extension only tells us how we *intend* to route the file;
+        # confirm the actual bytes match, since a renamed file would
+        # otherwise sail through and fail confusingly deeper in the pipeline.
+        if not _content_matches_extension(header, ext):
+            return {
+                "file_name": file.filename,
+                "status": "error",
+                "error": f"File content doesn't match its '{ext}' extension",
+            }
 
         # Rasterize PDFs to an image first, so every file (PDF or photo)
         # goes through the same enhancement and the parser always sees a
@@ -117,34 +155,44 @@ async def process_single_file(file: UploadFile) -> dict:
         else:
             image_path = temp_path
 
-        # Crop out the background and deskew, so the parser sees just the
-        # form/card itself rather than the table, hands, etc. Falls back
-        # to the uncropped image if no confident boundary is found.
-        await asyncio.to_thread(crop_to_document, image_path)
-
-        # Clean up shadows/contrast before parsing. This is CPU-bound
-        # OpenCV work, so it runs in a thread instead of blocking the
-        # event loop (and every other in-flight request) while it runs.
-        await asyncio.to_thread(enhance_document_image, image_path)
+        # Crop to the document boundary, deskew, clean up shadows/contrast,
+        # and downscale — all in one disk read/write. CPU-bound OpenCV work,
+        # so it runs in a thread instead of blocking the event loop (and
+        # every other in-flight request) while it runs.
+        await asyncio.to_thread(preprocess_document_image, image_path)
 
         # --- QUEUE CONTROL ---
         async with queue_lock:
-            # The parser automatically handles the Gemini -> OpenRouter routing natively
-            result = await asyncio.to_thread(parser.parse, image_path)
+            # The parser automatically handles the Gemini -> OpenRouter routing natively.
+            # Wrapped in a timeout so a stalled connection to either provider can't hang
+            # this request (and everything queued behind it) indefinitely.
+            try:
+                result = await asyncio.wait_for(
+                    asyncio.to_thread(parser.parse, image_path),
+                    timeout=PARSE_TIMEOUT_SECONDS,
+                )
+            except asyncio.TimeoutError:
+                return {
+                    "file_name": file.filename,
+                    "status": "error",
+                    "error": f"Parsing timed out after {PARSE_TIMEOUT_SECONDS}s",
+                }
 
-            # 4-second delay to keep the Free Tier APIs stable
-            await asyncio.sleep(4)
+            # Delay to keep the Free Tier APIs stable.
+            await asyncio.sleep(RATE_LIMIT_DELAY_SECONDS)
         # ---------------------
 
         return {"file_name": file.filename, "status": "success", "data": result}
 
     except Exception as e:
+        logger.exception("Failed to process %s", file.filename)
         return {"file_name": file.filename, "status": "error", "error": str(e)}
 
     finally:
         for path in temp_paths:
             if os.path.exists(path):
                 os.remove(path)
+
 
 @app.post("/parse-batch")
 async def parse_batch(files: List[UploadFile] = File(...)):

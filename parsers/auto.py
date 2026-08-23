@@ -1,11 +1,19 @@
 import json
 import base64
+import logging
 import mimetypes
 import fitz  # PyMuPDF for converting PDFs to Images
 from google import genai
 from google.genai import types
 from parsers.base import BaseDocumentParser
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
+
+# Explicit request timeouts so a stalled connection to either provider can't
+# hang a request (and everything queued behind it) indefinitely.
+GEMINI_TIMEOUT_MS = 60_000
+OPENROUTER_TIMEOUT_SECONDS = 60
 
 AUTO_PROMPT = """
 Analyze the provided document and determine its type. 
@@ -80,12 +88,17 @@ Return the result STRICTLY as a JSON object with EXACTLY this structure (do not 
     }
 }
 """
+
+
 class GeminiAutoParser(BaseDocumentParser):
     def __init__(self, api_key: str):
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS),
+        )
 
     def parse(self, file_path: str) -> dict:
-        print(f"Parsing {file_path} using GeminiAutoParser...")
+        logger.info("Parsing %s using GeminiAutoParser...", file_path)
         mime_type, _ = mimetypes.guess_type(file_path)
         if not mime_type:
             mime_type = "application/octet-stream"
@@ -112,29 +125,30 @@ class OpenRouterAutoParser(BaseDocumentParser):
         # Initializing the standard synchronous OpenAI client targeting OpenRouter
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=api_key
+            api_key=api_key,
+            timeout=OPENROUTER_TIMEOUT_SECONDS,
         )
 
     def parse(self, file_path: str) -> dict:
-        print(f"Parsing {file_path} using OpenRouter (GPT-4o-mini)...")
-        
+        logger.info("Parsing %s using OpenRouter (GPT-4o-mini)...", file_path)
+
         mime_type, _ = mimetypes.guess_type(file_path)
-        
+
         # Check if it's a PDF and convert it to a JPEG for OpenAI
         if mime_type == "application/pdf":
-            print(f"PDF detected for OpenRouter. Converting page 1 to image...")
+            logger.info("PDF detected for OpenRouter. Converting page 1 to image...")
             doc = fitz.open(file_path)
             page = doc.load_page(0)  # Load the first page
-            pix = page.get_pixmap(dpi=150) # High quality render
+            pix = page.get_pixmap(dpi=150)  # High quality render
             img_bytes = pix.tobytes("jpeg")
             base64_image = base64.b64encode(img_bytes).decode('utf-8')
-            mime_type = "image/jpeg" # Override MIME type for OpenAI
+            mime_type = "image/jpeg"  # Override MIME type for OpenAI
             doc.close()
         else:
             # If it's already an image, process it normally
             if not mime_type:
                 mime_type = "image/jpeg"
-                
+
             with open(file_path, "rb") as image_file:
                 base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -156,7 +170,7 @@ class OpenRouterAutoParser(BaseDocumentParser):
             ],
             response_format={"type": "json_object"}
         )
-        
+
         raw_text = response.choices[0].message.content
         clean_text = raw_text.replace("```json", "").replace("```", "").strip()
         return json.loads(clean_text)
@@ -192,7 +206,11 @@ class FallbackAutoParser(BaseDocumentParser):
             return self.primary.parse(file_path)
         except Exception as e:
             if _is_rate_limited(e):
-                print("Gemini Limit Hit! Switching to OpenRouter Fallback...")
-                return self.fallback.parse(file_path)
+                logger.warning("Gemini limit hit! Switching to OpenRouter fallback...")
+                try:
+                    return self.fallback.parse(file_path)
+                except Exception as fallback_error:
+                    logger.error("OpenRouter fallback also failed: %s", fallback_error)
+                    raise fallback_error
             # If it's a real error (like a corrupt image), throw it normally
             raise e

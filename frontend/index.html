@@ -3,264 +3,314 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White House — Tenant Information Form</title>
+  <title>White House — Tenant Registry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/frontend/style.css">
 </head>
 <body>
+
+  <!-- ===== App chrome — software wrapper around the paper form below ===== -->
+
   <div class="page">
 
     <!-- ===== Letterhead ===== -->
-    <header class="letterhead">
-      <div class="brand">
-        <svg class="brand-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M6 22 24 7l18 15" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M11 20v18a2 2 0 002 2h22a2 2 0 002-2V20" stroke-linejoin="round"/>
-          <path d="M20 40V29h8v11" stroke-linejoin="round"/>
-        </svg>
-        <div class="brand-text">
-          <h1>White House</h1>
-          <p class="brand-address">B-23, Lane 7, Johri Farm, Noor Nagar Ext, Jamia Nagar, Okhla, New Delhi-110025</p>
+    <div class="letterhead-card">
+      <header class="letterhead">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">WH</div>
+          <div class="brand-text">
+            <span class="brand-eyebrow">Paying Guest Accommodation</span>
+            <!-- <h1>White House</h1>
+            <p class="brand-address">B-23, Lane 7, Johri Farm, Noor Nagar Ext, Jamia Nagar, Okhla, New Delhi-110025</p> -->
+          </div>
         </div>
-      </div>
 
-      <div class="letterhead-right">
-        <div class="rules-box">
-          <span>Scan for<br>house rules</span>
+        <div class="letterhead-right">
+          <div class="rules-box">
+            <svg class="qr-pattern" viewBox="0 0 10 10" aria-hidden="true">
+              <rect x="0" y="0" width="3" height="3" fill="currentColor"/>
+              <rect x="1" y="1" width="1" height="1" fill="var(--surface)"/>
+              <rect x="7" y="0" width="3" height="3" fill="currentColor"/>
+              <rect x="8" y="1" width="1" height="1" fill="var(--surface)"/>
+              <rect x="0" y="7" width="3" height="3" fill="currentColor"/>
+              <rect x="1" y="8" width="1" height="1" fill="var(--surface)"/>
+              <rect x="4" y="0" width="1" height="1" fill="currentColor"/>
+              <rect x="4" y="2" width="1" height="1" fill="currentColor"/>
+              <rect x="6" y="4" width="1" height="1" fill="currentColor"/>
+              <rect x="4" y="4" width="1" height="1" fill="currentColor"/>
+              <rect x="4" y="6" width="2" height="2" fill="currentColor"/>
+              <rect x="7" y="4" width="1" height="3" fill="currentColor"/>
+              <rect x="9" y="4" width="1" height="1" fill="currentColor"/>
+              <rect x="7" y="8" width="1" height="1" fill="currentColor"/>
+              <rect x="9" y="8" width="1" height="1" fill="currentColor"/>
+              <rect x="9" y="6" width="1" height="1" fill="currentColor"/>
+            </svg>
+            <span>Scan for<br>house rules</span>
+          </div>
+          <label class="photo-box" id="photoBox" for="photoInput">
+            <img id="photoPreview" class="photo-preview hidden" alt="Tenant photo preview">
+            <span id="photoPlaceholder" class="photo-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 8a2 2 0 012-2h2l1.5-2h5L16 6h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              Photo
+            </span>
+            <input type="file" id="photoInput" accept="image/*" hidden>
+          </label>
         </div>
-        <label class="photo-box" id="photoBox" for="photoInput">
-          <img id="photoPreview" class="photo-preview hidden" alt="Tenant photo preview">
-          <span id="photoPlaceholder" class="photo-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 8a2 2 0 012-2h2l1.5-2h5L16 6h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
-            Photo
-          </span>
-          <input type="file" id="photoInput" accept="image/*" hidden>
-        </label>
-      </div>
-    </header>
-
-    <div class="header-actions">
-      <button type="button" id="openUploadBtn" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
-        Upload documents (forms, Aadhaar, ID…)
-      </button>
-      <button type="button" id="printFormBtn" class="btn btn-secondary">Print / save as PDF</button>
+      </header>
     </div>
 
-    <h2 class="form-title">Tenant Information Form</h2>
+    <div class="header-actions">
+      <div class="header-actions-buttons">
+        <button type="button" id="openUploadBtn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+          Upload documents (forms, Aadhaar, ID…)
+        </button>
+        <button type="button" id="printFormBtn" class="btn btn-secondary">Print / save as PDF</button>
+      </div>
+    </div>
+
+    <div class="form-title-wrap">
+      <h2 class="form-title">Tenant Information Form</h2>
+      <p class="form-subtitle">To be completed in full and signed by the tenant before move-in</p>
+    </div>
 
     <!-- ===== The form itself ===== -->
     <form id="tenantForm" class="form-sheet" autocomplete="off">
 
-      <div class="form-row cols-2">
-        <div class="field">
-          <label for="tenantName">Name:-</label>
-          <input type="text" id="tenantName" class="text-input">
-        </div>
-        <div class="field">
-          <span class="field-label">Mobile No &amp; Alternate No</span>
-          <div class="dual-inputs">
-            <input type="text" id="mobileNo" class="text-input" placeholder="Mobile No">
-            <input type="text" id="altMobileNo" class="text-input" placeholder="Alternate No">
-          </div>
-        </div>
-      </div>
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">01</span><h3>Tenant Details</h3></div>
 
-      <div class="form-row cols-1">
-        <div class="field">
-          <label for="tenantEmail">Email:-</label>
-          <input type="email" id="tenantEmail" class="text-input">
-        </div>
-      </div>
-
-      <div class="form-row cols-3">
-        <div class="field">
-          <label for="dob">Date of Birth (DD-MM-YY)</label>
-          <input type="text" id="dob" class="text-input" placeholder="DD-MM-YY">
-        </div>
-        <div class="field">
-          <span class="field-label">Marital Status</span>
-          <div class="choice-group" role="radiogroup" aria-label="Marital status">
-            <label class="choice-box"><input type="radio" name="maritalStatus" value="Married"><span>Married</span></label>
-            <label class="choice-box"><input type="radio" name="maritalStatus" value="Unmarried"><span>Unmarried</span></label>
-          </div>
-        </div>
-        <div class="field">
-          <label for="idNumber">Aadhar card / Voter ID / Passport No.</label>
-          <input type="text" id="idNumber" class="text-input" placeholder="ID Number">
-        </div>
-      </div>
-
-      <div class="form-row cols-2">
-        <div class="field">
-          <label for="fatherName">Father's/Husband Name:-</label>
-          <input type="text" id="fatherName" class="text-input" placeholder="Mr.">
-        </div>
-        <div class="field">
-          <label for="fatherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
-          <input type="text" id="fatherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
-        </div>
-      </div>
-      <div class="form-row cols-1">
-        <div class="field">
-          <label for="fatherEmail">Email:-</label>
-          <input type="email" id="fatherEmail" class="text-input">
-        </div>
-      </div>
-
-      <div class="form-row cols-2">
-        <div class="field">
-          <label for="motherName">Mother's Name:-</label>
-          <input type="text" id="motherName" class="text-input" placeholder="Mrs.">
-        </div>
-        <div class="field">
-          <label for="motherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
-          <input type="text" id="motherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
-        </div>
-      </div>
-      <div class="form-row cols-1">
-        <div class="field">
-          <label for="motherEmail">Email:-</label>
-          <input type="email" id="motherEmail" class="text-input">
-        </div>
-      </div>
-
-      <div class="field block-field">
-        <label for="permanentAddress">Permanent Address</label>
-        <textarea id="permanentAddress" class="textarea" rows="3"></textarea>
-        <div class="sub-row">
-          <div class="field inline">
-            <label for="permanentPoliceStation">Police Station:</label>
-            <input type="text" id="permanentPoliceStation" class="text-input">
-          </div>
-          <div class="field inline">
-            <label for="permanentPin">Pin:</label>
-            <input type="text" id="permanentPin" class="text-input">
-          </div>
-        </div>
-      </div>
-
-      <div class="field block-field">
-        <label for="previousAddress">Previous Address</label>
-        <textarea id="previousAddress" class="textarea" rows="3"></textarea>
-        <div class="sub-row">
-          <div class="field inline">
-            <label for="previousPoliceStation">Police Station:</label>
-            <input type="text" id="previousPoliceStation" class="text-input">
-          </div>
-          <div class="field inline">
-            <label for="previousPin">Pin:</label>
-            <input type="text" id="previousPin" class="text-input">
-          </div>
-        </div>
-      </div>
-
-      <div class="field block-field">
-        <div class="guardian-head">
-          <label for="guardianAddress">Local Guardian Name, address and Mobile No</label>
-          <div class="guardian-mobiles">
-            <span class="field-label">Guardian Mobile</span>
-            <input type="text" id="guardianMobile1" class="text-input" placeholder="Mobile 1">
-            <input type="text" id="guardianMobile2" class="text-input" placeholder="Mobile 2">
-          </div>
-        </div>
-        <textarea id="guardianAddress" class="textarea" rows="3"></textarea>
-        <div class="sub-row">
-          <div class="field inline">
-            <label for="guardianPoliceStation">Police Station:</label>
-            <input type="text" id="guardianPoliceStation" class="text-input">
-          </div>
-          <div class="field inline">
-            <label for="guardianPin">Pin:</label>
-            <input type="text" id="guardianPin" class="text-input">
-          </div>
-        </div>
-      </div>
-
-      <div class="field block-field">
-        <span class="field-label">Academic / Job Information</span>
-        <div class="academic-grid">
+        <div class="form-row cols-2">
           <div class="field">
-            <label for="deptPost">Department/Post</label>
-            <input type="text" id="deptPost" class="text-input">
+            <label for="tenantName">Name:-</label>
+            <input type="text" id="tenantName" class="text-input">
           </div>
           <div class="field">
-            <label for="programClass">Program/Class</label>
-            <input type="text" id="programClass" class="text-input">
+            <span class="field-label">Mobile No &amp; Alternate No</span>
+            <div class="dual-inputs">
+              <input type="text" id="mobileNo" class="text-input" placeholder="Mobile No">
+              <input type="text" id="altMobileNo" class="text-input" placeholder="Alternate No">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row cols-1">
+          <div class="field">
+            <label for="tenantEmail">Email:-</label>
+            <input type="email" id="tenantEmail" class="text-input">
+          </div>
+        </div>
+
+        <div class="form-row cols-3">
+          <div class="field">
+            <label for="dob">Date of Birth (DD-MM-YY)</label>
+            <input type="text" id="dob" class="text-input" placeholder="DD-MM-YY">
           </div>
           <div class="field">
-            <label for="semesterYear">Semester/Year</label>
-            <input type="text" id="semesterYear" class="text-input">
+            <span class="field-label">Marital Status</span>
+            <div class="choice-group" role="radiogroup" aria-label="Marital status">
+              <label class="choice-box"><input type="radio" name="maritalStatus" value="Married"><span>Married</span></label>
+              <label class="choice-box"><input type="radio" name="maritalStatus" value="Unmarried"><span>Unmarried</span></label>
+            </div>
           </div>
-          <div class="field span-3">
-            <label for="institutionName">Name and Address of School/College/University/Office</label>
-            <input type="text" id="institutionName" class="text-input">
+          <div class="field">
+            <label for="idNumber">Aadhar card / Voter ID / Passport No.</label>
+            <input type="text" id="idNumber" class="text-input" placeholder="ID Number">
           </div>
         </div>
       </div>
 
-      <div class="form-row cols-4">
-        <div class="field">
-          <label for="stayMinimum">Expected period of stay minimum</label>
-          <input type="text" id="stayMinimum" class="text-input" placeholder="e.g. 6 months">
-        </div>
-        <div class="field">
-          <label for="joiningDate">Date of joining</label>
-          <input type="text" id="joiningDate" class="text-input" placeholder="DD-MM-YY">
-        </div>
-        <div class="field">
-          <label>Room No (Flat/Room/Bed)</label>
-          <div class="triple-field">
-            <input type="text" class="text-input small" id="roomFlat" aria-label="Flat" placeholder="Flat">
-            <span class="triple-sep">/</span>
-            <input type="text" class="text-input small" id="roomRoom" aria-label="Room" placeholder="Room">
-            <span class="triple-sep">/</span>
-            <input type="text" class="text-input small" id="roomBed" aria-label="Bed" placeholder="Bed">
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">02</span><h3>Parent &amp; Guardian Details</h3></div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label for="fatherName">Father's/Husband Name:-</label>
+            <input type="text" id="fatherName" class="text-input" placeholder="Mr.">
+          </div>
+          <div class="field">
+            <label for="fatherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
+            <input type="text" id="fatherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
           </div>
         </div>
-        <div class="field">
-          <label for="quitDate">Quit date</label>
-          <input type="text" id="quitDate" class="text-input" placeholder="DD-MM-YY">
+        <div class="form-row cols-1">
+          <div class="field">
+            <label for="fatherEmail">Email:-</label>
+            <input type="email" id="fatherEmail" class="text-input">
+          </div>
+        </div>
+
+        <div class="form-row cols-2">
+          <div class="field">
+            <label for="motherName">Mother's Name:-</label>
+            <input type="text" id="motherName" class="text-input" placeholder="Mrs.">
+          </div>
+          <div class="field">
+            <label for="motherMobileAadhar">Mobile Number &amp; Aadhar card no</label>
+            <input type="text" id="motherMobileAadhar" class="text-input" placeholder="Mobile & Aadhaar">
+          </div>
+        </div>
+        <div class="form-row cols-1">
+          <div class="field">
+            <label for="motherEmail">Email:-</label>
+            <input type="email" id="motherEmail" class="text-input">
+          </div>
+        </div>
+
+        <div class="field block-field">
+          <div class="guardian-head">
+            <label for="guardianAddress">Local Guardian Name, address and Mobile No</label>
+            <div class="guardian-mobiles">
+              <span class="field-label">Guardian Mobile</span>
+              <input type="text" id="guardianMobile1" class="text-input" placeholder="Mobile 1">
+              <input type="text" id="guardianMobile2" class="text-input" placeholder="Mobile 2">
+            </div>
+          </div>
+          <textarea id="guardianAddress" class="textarea" rows="3"></textarea>
+          <div class="sub-row">
+            <div class="field inline">
+              <label for="guardianPoliceStation">Police Station:</label>
+              <input type="text" id="guardianPoliceStation" class="text-input">
+            </div>
+            <div class="field inline">
+              <label for="guardianPin">Pin:</label>
+              <input type="text" id="guardianPin" class="text-input">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="form-row cols-3 rent-row">
-        <div class="field">
-          <label for="rentAdvance">One month rent advance</label>
-          <div class="rupee-field">
-            <span class="rupee-prefix">Rs.</span>
-            <input type="number" id="rentAdvance" class="text-input" min="0">
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">03</span><h3>Address Details</h3></div>
+
+        <div class="field block-field">
+          <label for="permanentAddress">Permanent Address</label>
+          <textarea id="permanentAddress" class="textarea" rows="3"></textarea>
+          <div class="sub-row">
+            <div class="field inline">
+              <label for="permanentPoliceStation">Police Station:</label>
+              <input type="text" id="permanentPoliceStation" class="text-input">
+            </div>
+            <div class="field inline">
+              <label for="permanentPin">Pin:</label>
+              <input type="text" id="permanentPin" class="text-input">
+            </div>
           </div>
         </div>
-        <div class="field">
-          <label for="securityDeposit">Refundable security deposit</label>
-          <div class="rupee-field">
-            <span class="rupee-prefix">Rs.</span>
-            <input type="number" id="securityDeposit" class="text-input" min="0">
+
+        <div class="field block-field">
+          <label for="previousAddress">Previous Address</label>
+          <textarea id="previousAddress" class="textarea" rows="3"></textarea>
+          <div class="sub-row">
+            <div class="field inline">
+              <label for="previousPoliceStation">Police Station:</label>
+              <input type="text" id="previousPoliceStation" class="text-input">
+            </div>
+            <div class="field inline">
+              <label for="previousPin">Pin:</label>
+              <input type="text" id="previousPin" class="text-input">
+            </div>
           </div>
         </div>
-        <div class="field">
-          <label for="rentStartDate">Rent start from date</label>
-          <input type="text" id="rentStartDate" class="text-input" placeholder="DD-MM-YY">
-        </div>
-      </div>
-      <p class="form-note">Note: only after 3 months stay and given 1 month notice</p>
-
-      <div class="confirm-row">
-        <label class="confirm-check">
-          <input type="checkbox" id="confirmTrue">
-          <span>I confirm that the information given is true.</span>
-        </label>
-        <span class="for-white-house">for White House</span>
       </div>
 
-      <div class="signature-row">
-        <div class="signature-field">
-          <input type="text" id="tenantSignature" class="signature-input" placeholder="Sign…………………………">
-          <span class="signature-caption">Tenant signature</span>
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">04</span><h3>Academic / Employment</h3></div>
+
+        <div class="field block-field">
+          <div class="academic-grid">
+            <div class="field">
+              <label for="deptPost">Department/Post</label>
+              <input type="text" id="deptPost" class="text-input">
+            </div>
+            <div class="field">
+              <label for="programClass">Program/Class</label>
+              <input type="text" id="programClass" class="text-input">
+            </div>
+            <div class="field">
+              <label for="semesterYear">Semester/Year</label>
+              <input type="text" id="semesterYear" class="text-input">
+            </div>
+            <div class="field span-3">
+              <label for="institutionName">Name and Address of School/College/University/Office</label>
+              <input type="text" id="institutionName" class="text-input">
+            </div>
+          </div>
         </div>
-        <div class="signature-field">
-          <input type="text" id="ownerSignature" class="signature-input" placeholder="Sign…………………………">
-          <span class="signature-caption">Authorised signatory, for White House</span>
+      </div>
+
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">05</span><h3>Stay &amp; Payment</h3></div>
+
+        <div class="form-row cols-4">
+          <div class="field">
+            <label for="stayMinimum">Expected period of stay minimum</label>
+            <input type="text" id="stayMinimum" class="text-input" placeholder="e.g. 6 months">
+          </div>
+          <div class="field">
+            <label for="joiningDate">Date of joining</label>
+            <input type="text" id="joiningDate" class="text-input" placeholder="DD-MM-YY">
+          </div>
+          <div class="field">
+            <label>Room No (Flat/Room/Bed)</label>
+            <div class="triple-field">
+              <input type="text" class="text-input small" id="roomFlat" aria-label="Flat" placeholder="Flat">
+              <span class="triple-sep">/</span>
+              <input type="text" class="text-input small" id="roomRoom" aria-label="Room" placeholder="Room">
+              <span class="triple-sep">/</span>
+              <input type="text" class="text-input small" id="roomBed" aria-label="Bed" placeholder="Bed">
+            </div>
+          </div>
+          <div class="field">
+            <label for="quitDate">Quit date</label>
+            <input type="text" id="quitDate" class="text-input" placeholder="DD-MM-YY">
+          </div>
+        </div>
+
+        <div class="form-row cols-3 rent-row">
+          <div class="field">
+            <label for="rentAdvance">One month rent advance</label>
+            <div class="rupee-field">
+              <span class="rupee-prefix">₹</span>
+              <input type="number" id="rentAdvance" class="text-input" min="0">
+            </div>
+          </div>
+          <div class="field">
+            <label for="securityDeposit">Refundable security deposit</label>
+            <div class="rupee-field">
+              <span class="rupee-prefix">₹</span>
+              <input type="number" id="securityDeposit" class="text-input" min="0">
+            </div>
+          </div>
+          <div class="field">
+            <label for="rentStartDate">Rent start from date</label>
+            <input type="text" id="rentStartDate" class="text-input" placeholder="DD-MM-YY">
+          </div>
+        </div>
+        <p class="form-note">Note: only after 3 months stay and given 1 month notice</p>
+      </div>
+
+      <div class="form-section">
+        <div class="section-heading"><span class="section-eyebrow">06</span><h3>Declaration</h3></div>
+
+        <div class="confirm-row">
+          <label class="confirm-check">
+            <input type="checkbox" id="confirmTrue">
+            <span>I confirm that the information given is true.</span>
+          </label>
+          <span class="for-white-house">for White House</span>
+        </div>
+
+        <div class="signature-row">
+          <div class="signature-field">
+            <input type="text" id="tenantSignature" class="signature-input" placeholder="Sign…………………………">
+            <span class="signature-caption">Tenant signature</span>
+          </div>
+          <div class="signature-field">
+            <input type="text" id="ownerSignature" class="signature-input" placeholder="Sign…………………………">
+            <span class="signature-caption">Authorised signatory, for White House</span>
+          </div>
         </div>
       </div>
 
@@ -325,7 +375,10 @@
             <p id="batchSummary" class="batch-summary hidden"></p>
 
             <div id="resultBody" class="result-body" aria-live="polite">
-              <p id="emptyState" class="empty-state">Parsed data will appear here after you upload and parse your documents.</p>
+              <div id="emptyState" class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12h6M9 16h6M9 8h2M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/></svg>
+                <span>Parsed data will appear here after you upload and parse your documents.</span>
+              </div>
 
               <div id="loadingState" class="loading-state hidden">
                 <span class="spinner" aria-hidden="true"></span>
@@ -359,6 +412,8 @@
     </div>
 
   </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
